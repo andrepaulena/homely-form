@@ -1,5 +1,5 @@
 <?php
-namespace MyForm\Elements\Base;
+namespace HomelyForm\Elements\Base;
 
 interface ElementInterface
 {

@@ -1,7 +1,7 @@
 <?php
-namespace MyForm\Elements\Base;
+namespace HomelyForm\Elements\Base;
 
-use MyForm\Elements\Label;
+use HomelyForm\Elements\Label;
 
 abstract class AbstractFormElement extends AbstractElement
 {

@@ -1,7 +1,7 @@
 <?php
-namespace MyForm\Elements;
+namespace HomelyForm\Elements;
 
-use MyForm\Elements\Base\AbstractFormElement;
+use HomelyForm\Elements\Base\AbstractFormElement;
 
 class Hidden extends AbstractFormElement
 {

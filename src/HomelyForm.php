@@ -1,9 +1,8 @@
 <?php
-namespace MyForm;
+namespace HomelyForm;
 
 use MyForm\Elements\Base\AbstractElement;
 use MyForm\Elements\Base\AbstractFormElement;
-use MyForm\Templates\TemplateInterface;
 
 class HomelyForm extends AbstractElement
 {

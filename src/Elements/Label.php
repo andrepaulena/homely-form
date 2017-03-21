@@ -1,7 +1,7 @@
 <?php
-namespace MyForm\Elements;
+namespace HomelyForm\Elements;
 
-use MyForm\Elements\Base\AbstractElement;
+use HomelyForm\Elements\Base\AbstractElement;
 
 class Label extends AbstractElement
 {

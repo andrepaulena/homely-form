@@ -1,7 +1,7 @@
 <?php
-namespace MyForm\Elements\Base;
+namespace HomelyForm\Elements\Base;
 
-use MyForm\Templates\TemplateInterface;
+use HomelyForm\Templates\TemplateInterface;
 
 abstract class AbstractElement
 {

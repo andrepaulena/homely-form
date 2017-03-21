@@ -1,5 +1,5 @@
 <?php
-namespace MyForm\Templates;
+namespace HomelyForm\Templates;
 
 class BootstrapTemplate implements TemplateInterface
 {
