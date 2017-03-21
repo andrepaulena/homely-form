@@ -1,0 +1,9 @@
+{
+    "name": "andrepaulena/homely-form",
+    "description": "A simple form generator for PHP (it's in beta beta beta yet)",
+    "autoload": {
+        "psr-4": {
+            "MyForm\\": "src/"
+        }
+    }
+}
