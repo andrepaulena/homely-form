@@ -13,6 +13,6 @@ class Hidden extends AbstractFormElement
 
     protected function renderElement()
     {
-        return '<input type="hidden" '.$this->prepareElement().">";
+        return '<input type="hidden" '.$this->concatAttributesToElement().">";
     }
 }

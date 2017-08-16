@@ -3,6 +3,7 @@ namespace HomelyForm;
 
 use HomelyForm\Elements\Base\AbstractElement;
 use HomelyForm\Elements\Base\AbstractFormElement;
+use Respect\Validation\Validator;
 
 class HomelyForm extends AbstractElement
 {
@@ -32,7 +33,7 @@ class HomelyForm extends AbstractElement
 
     protected function renderElement()
     {
-        $form = "<form ".$this->prepareElement().">\n";
+        $form = "<form ".$this->concatAttributesToElement().">\n";
 
         /** @var AbstractFormElement $element */
         foreach ($this->elements as $element) {
@@ -126,5 +127,54 @@ class HomelyForm extends AbstractElement
     public function fields()
     {
         return [];
+    }
+
+    public function getPost()
+    {
+        $post = [];
+
+        foreach ($_POST as $key => $value) {
+            /** @var AbstractFormElement $element */
+            foreach ($this->elements as $element) {
+                if ($key == $element->getName()) {
+                    $post[$key] = $value;
+                    $element->setValue($value);
+                }
+            }
+        }
+
+        return $post;
+    }
+
+    public function setValues($values)
+    {
+        foreach ($values as $key => $value) {
+            /** @var AbstractFormElement $element */
+            foreach ($this->elements as $element) {
+                if ($key == $element->getName()) {
+                    $element->setValue($value);
+                }
+            }
+        }
+    }
+
+    public function isValid()
+    {
+        /** @var AbstractFormElement $field */
+        foreach ($this->fields() as $field) {
+            $field->isValid();
+        }
+    }
+
+    public function getValues()
+    {
+        $values = [];
+
+        /** @var AbstractFormElement $element */
+        foreach ($this->elements as $element) {
+            $values[$element->getElementName()] = $element->getValue();
+        }
+
+        return $values;
     }
 }

@@ -1,26 +1,30 @@
 <?php
 namespace HomelyForm\Elements\Base;
 
-use HomelyForm\Templates\TemplateInterface;
-
 abstract class AbstractElement
 {
-    /** @var TemplateInterface */
     protected $template;
 
     protected $elementName;
 
-    protected $id;
-
-    protected $class;
-
-    protected $attributes = [];
-
-    protected $style = [];
-
-    protected $toAddInElement = [];
+    protected $attributes = [
+        'id' => '',
+        'class' => '',
+        'style' => []
+    ];
 
     protected $container;
+
+    abstract protected function renderElement();
+
+    public function setTemplate($template)
+    {
+        if (!is_object($template)) {
+            $this->template = new $template();
+        } else {
+            $this->template = $template;
+        }
+    }
 
     public function getContainer()
     {
@@ -34,8 +38,6 @@ abstract class AbstractElement
         return $this;
     }
 
-    abstract protected function renderElement();
-
     public function getElementName()
     {
         return $this->elementName;
@@ -48,31 +50,32 @@ abstract class AbstractElement
 
     public function getId()
     {
-        return $this->id;
+        return $this->attributes['id']?$this->attributes['id']:null;
     }
 
     public function setId($id)
     {
-        $this->id = $id;
+        $this->attributes['id'] = $id;
 
         return $this;
     }
 
     public function getClass()
     {
-        return $this->class;
+        return $this->attributes['class']?$this->attributes['class']:null;
     }
 
     public function setClass($class)
     {
-        $this->class = $class;
+        $this->attributes['class'] = $class;
+
         return $this;
     }
 
     public function appendClass($class)
     {
-        if (strpos($this->class, $class) === false) {
-            $this->class .= " ".$class;
+        if (strpos($this->attributes['class'], $class) === false) {
+            $this->attributes['class'] .= " ".$class;
         }
 
         return $this;
@@ -80,15 +83,17 @@ abstract class AbstractElement
 
     public function prependClass($class)
     {
-        $this->class = $class." ".$this->class;
+        if (strpos($this->attributes['class'], $class) === false) {
+            $this->attributes['class'] = $class." ".$this->attributes['class'];
+        }
 
         return $this;
     }
 
     public function removeClass($class)
     {
-        if (strpos($this->class, $class) !== false) {
-            $this->class = str_replace($class, "", $this->class);
+        if (strpos($this->attributes['class'], $class) !== false) {
+            $this->attributes['class'] = str_replace($class, "", $this->attributes['class']);
         }
 
         return $this;
@@ -96,19 +101,34 @@ abstract class AbstractElement
 
     public function addStyle($attr, $value)
     {
-        $this->style[$attr] = $value;
+        $this->attributes['style'][$attr] = $value;
+
+        return $this;
     }
 
     public function removeStyle($attr)
     {
-        if (isset($this->style[$attr])) {
-            unset($this->style[$attr]);
+        if (isset($this->attributes['style'][$attr])) {
+            unset($this->attributes['style'][$attr]);
         }
+
+        return $this;
     }
 
-    public function setTemplate(TemplateInterface $template)
+    public function addAttribute($attr, $value)
     {
-        $this->template = $template;
+        $this->attributes[$attr] = $value;
+
+        return $this;
+    }
+
+    public function removeAttribute($attr)
+    {
+        if (isset($this->attributes[$attr])) {
+            unset($this->attributes[$attr]);
+        }
+
+        return $this;
     }
 
     public function __toString()
@@ -116,21 +136,30 @@ abstract class AbstractElement
         return $this->renderElement();
     }
 
-    protected function prepareElement()
+    protected function concatAttributesToElement()
     {
         $input = '';
 
-        $this->toAddInElement['id'] = $this->id;
-        $this->toAddInElement['class'] = $this->class;
+        foreach ($this->attributes as $attr => $value) {
+            if ($attr == 'style' && !empty($value)) {
+                $valueStyle = [];
 
-        foreach ($this->toAddInElement as $attr => $value) {
-            $value = trim($value);
+                foreach ($value as $style => &$valueStyle) {
+                    $valueStyle = $style.':'.$valueStyle;
+                }
 
-            if ($value) {
-                $input .= " {$attr}='{$value}' ";
+                $valueStyle = implode(';', $value);
+
+                $input .= "{$attr}='{$valueStyle}' ";
+            } else {
+                $value = trim($value);
+
+                if ($value) {
+                    $input .= "{$attr}='{$value}' ";
+                }
             }
         }
 
-        return $input;
+        return trim($input);
     }
 }

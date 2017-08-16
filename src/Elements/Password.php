@@ -7,6 +7,6 @@ class Password extends AbstractFormElement
 {
     protected function renderElement()
     {
-        return '<input type="password" '.$this->prepareElement().">";
+        return '<input type="password" '.$this->concatAttributesToElement().">";
     }
 }

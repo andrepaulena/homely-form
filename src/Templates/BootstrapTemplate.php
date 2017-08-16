@@ -1,58 +1,11 @@
 <?php
 namespace HomelyForm\Templates;
 
-class BootstrapTemplate implements TemplateInterface
+class BootstrapTemplate
 {
-    public $basicInput = '<div class="form-group">{{elementForm}}</div>';
+    public $basicContainerInput = '<div class="form-group">{{label}}{{elementForm}}{{errors}}</div>';
     public $basicClassInput = 'form-control';
 
-    public function getTextTemplate()
-    {
-        return $this->basicInput;
-    }
-
-    public function getEmailTemplate()
-    {
-        return $this->basicInput;
-    }
-
-    public function getNumberTemplate()
-    {
-        return $this->basicInput;
-    }
-
-    public function getPasswordTemplate()
-    {
-        return $this->basicInput;
-    }
-
-    public function getClassTextTemplate()
-    {
-        return $this->basicClassInput;
-    }
-
-    public function getClassEmailTemplate()
-    {
-        return $this->basicClassInput;
-    }
-
-    public function getClassNumberTemplate()
-    {
-        return $this->basicClassInput;
-    }
-
-    public function getClassPasswordTemplate()
-    {
-        return $this->basicClassInput;
-    }
-
-    public function getSelectTemplate()
-    {
-        return $this->basicInput;
-    }
-
-    public function getClassSelectTemplate()
-    {
-        return $this->basicClassInput;
-    }
+    public $textContainer = '<div class="form-group">{{label}}{{elementForm}}{{errors}}</div>';
+    public $textClass = 'form-control text';
 }

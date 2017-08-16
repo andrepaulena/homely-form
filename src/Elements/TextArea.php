@@ -13,7 +13,7 @@ class TextArea extends AbstractFormElement
     {
         $multiple = $this->multiple?'multiple ':'';
 
-        $element =  '<select '.$multiple.$this->prepareElement().'>';
+        $element =  '<select '.$multiple.$this->concatAttributesToElement().'>';
 
         foreach ($this->options as $key => $value) {
             $element .= "<option value='{$key}'>{$value}</option>";

@@ -11,7 +11,7 @@ class File extends AbstractFormElement
 
     protected function renderElement()
     {
-        $element =  '<select '.$this->prepareElement().'>\n';
+        $element =  '<select '.$this->concatAttributesToElement().'>\n';
 
         foreach ($this->options as $key => $value) {
             $element .= "<option value='{$key}'>{$value}</option>\n";

@@ -7,6 +7,6 @@ class Email extends AbstractFormElement
 {
     protected function renderElement()
     {
-        return '<input type="email" '.$this->prepareElement().">";
+        return '<input type="email" '.$this->concatAttributesToElement().">";
     }
 }

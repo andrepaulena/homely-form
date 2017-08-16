@@ -10,25 +10,23 @@ class Label extends AbstractElement
         $this->name = $name;
     }
 
-    protected $for;
-
     protected $name;
 
     public function getFor()
     {
-        return $this->for;
+        return $this->attributes['for']?$this->attributes['for']:null;
     }
 
     public function setFor($for)
     {
-        $this->for = $for;
-        $this->toAddInElement['for'] = $this->for;
+        $this->attributes['for'] = $for;
     }
 
     public function getName()
     {
         return $this->name;
     }
+
     public function setName($name)
     {
         $this->name = $name;
@@ -36,6 +34,6 @@ class Label extends AbstractElement
 
     protected function renderElement()
     {
-        return "<label ".$this->prepareElement().">{$this->name}</label>";
+        return "<label ".$this->concatAttributesToElement().">{$this->name}</label>";
     }
 }

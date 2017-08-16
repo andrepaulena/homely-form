@@ -7,6 +7,6 @@ class Number extends AbstractFormElement
 {
     protected function renderElement()
     {
-        return '<input type="number" '.$this->prepareElement().">";
+        return '<input type="number" '.$this->concatAttributesToElement().">";
     }
 }

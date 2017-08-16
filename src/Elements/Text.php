@@ -7,6 +7,6 @@ class Text extends AbstractFormElement
 {
     protected function renderElement()
     {
-        return '<input type="text" '.$this->prepareElement().">";
+        return '<input type="text" '.$this->concatAttributesToElement().">";
     }
 }

@@ -2,38 +2,34 @@
 namespace HomelyForm\Elements\Base;
 
 use HomelyForm\Elements\Label;
+use Respect\Validation\Exceptions\ValidationException;
+use Respect\Validation\Validator;
 
 abstract class AbstractFormElement extends AbstractElement
 {
     public function __construct($title)
     {
         $this->label = new Label($title);
+        $this->label->setName(ucfirst(strtolower($title)));
+
         $this->elementName = $title;
-        $this->name = $title;
+        $this->setName($title);
     }
-
-    protected $placeHolder;
-
-    protected $name;
 
     protected $label;
 
-    protected $value;
+    protected $validators = [];
 
-    protected $required = false;
-
-    protected $disabled = false;
+    protected $errors = [];
 
     public function getName()
     {
-        return $this->name;
+        return $this->attributes['name']?$this->attributes['name']:null;
     }
 
     public function setName($name)
     {
-        $this->name = $name;
-
-        $this->toAddInElement['name'] = $this->id;
+        $this->attributes['name'] = $name;
 
         return $this;
     }
@@ -48,20 +44,19 @@ abstract class AbstractFormElement extends AbstractElement
     public function setId($id)
     {
         parent::setId($id);
-        $this->label->setFor($this->id);
+        $this->label->setFor($id);
 
         return $this;
     }
 
     public function getPlaceHolder()
     {
-        return $this->placeHolder;
+        return $this->attributes['placeholder']?$this->attributes['placeHolder']:null;
     }
 
     public function setPlaceHolder($placeHolder)
     {
-        $this->placeHolder = $placeHolder;
-        $this->toAddInElement['placeholder'] = $this->placeHolder;
+        $this->attributes['placeholder'] = $placeHolder;
 
         return $this;
     }
@@ -73,8 +68,6 @@ abstract class AbstractFormElement extends AbstractElement
 
     public function setLabel($label)
     {
-        $this->label = null;
-
         if ($label instanceof Label) {
             $this->label = $label;
         }
@@ -84,62 +77,97 @@ abstract class AbstractFormElement extends AbstractElement
 
     public function getValue()
     {
-        return $this->value;
+        return $this->attributes['placeHolder']?$this->attributes['placeHolder']:null;
     }
 
     public function setValue($value)
     {
-        $this->value = $value;
-        $this->toAddInElement['value'] = $value;
+        $this->attributes['value'] = $value;
 
         return $this;
     }
 
     public function setRequired($required = true)
     {
-        $this->required = $required;
-        $this->toAddInElement['required'] = $this->required;
+        $this->attributes['required'] = $required;
 
         return $this;
     }
 
     public function setDisabled($disabled = true)
     {
-        $this->disabled = $disabled;
-        $this->toAddInElement['disabled'] = $this->disabled;
+        $this->attributes['disabled'] = $disabled;
 
         return $this;
     }
 
+    public function addValidator($validator, $options = [], $message = '')
+    {
+        $this->validators[$validator] = [
+            'options' => $options,
+            'message' => $message
+        ];
+
+        return $this;
+    }
+
+    public function isValid()
+    {
+        foreach ($this->validators as $validator => $options) {
+            try {
+                Validator::buildRule($validator, $options['options'])->assert($this->getValue());
+            } catch (ValidationException $e) {
+                $this->errors[$validator] = $options['message']?$options['message']:$e->getMessage();
+            }
+        }
+    }
+
     public function render()
     {
-        if ($this->container == null && $this->template != null) {
-            $class = substr(get_called_class(), strrpos(get_called_class(), '\\')+1);
-            $containerMethod = "get{$class}Template";
-            $classMethod = "getClass{$class}Template";
+        if ($this->template != null && $this->container == null) {
+            $type = strtolower(substr(get_called_class(), strrpos(get_called_class(), '\\') + 1));
 
-            if (method_exists($this->template, $containerMethod)) {
-                $this->container = $this->template->{$containerMethod}();
+            if (isset($this->template->{$type . 'Container'})) {
+                $this->container = $this->template->{$type . 'Container'};
+            } elseif (isset($this->template->{'basicContainerInput'})) {
+                $this->container = $this->template->{'basicContainerInput'};
             }
 
-            if (method_exists($this->template, $classMethod)) {
-                $this->appendClass($this->template->{$classMethod}());
+            if (isset($this->template->{$type . 'Class'})) {
+                $this->appendClass($this->template->{$type . 'Class'});
+            } elseif (isset($this->template->{'basicClassInput'})) {
+                $this->appendClass($this->template->{'basicClassInput'});
             }
         }
 
+        $label = '';
         $element = '';
 
         if ($this->label) {
-            $element .= $this->label->renderElement()."\n";
+            $label = $this->label->renderElement(). "\n";
         }
 
-        $element .= $this->renderElement();
+        $mainElement = $this->renderElement();
+        $container = $this->container;
 
         if ($this->container) {
-            if (strpos($this->container, '{{elementForm}}') !== false) {
-                $element = str_replace('{{elementForm}}', $element, $this->container);
+            if (strpos($container, '{{label}}') !== false) {
+                $container = str_replace('{{label}}', $label, $container);
             }
+
+            if (strpos($container, '{{elementForm}}') !== false) {
+                $container = str_replace('{{elementForm}}', $mainElement, $container);
+            }
+
+            if (strpos($container, '{{errors}}') !== false) {
+                $container = str_replace('{{errors}}', '', $container);
+            }
+
+            return $container;
         }
+
+        $element = $label;
+        $element .= $mainElement;
 
         return $element;
     }
