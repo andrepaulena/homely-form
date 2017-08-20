@@ -3,32 +3,27 @@ namespace HomelyForm;
 
 use HomelyForm\Elements\Base\AbstractElement;
 use HomelyForm\Elements\Base\AbstractFormElement;
-use Respect\Validation\Validator;
 
 class HomelyForm extends AbstractElement
 {
     protected $elements = [];
 
-    protected $action = '/';
-
-    protected $method = 'POST';
-
     public function __construct()
     {
-        if ($this->template) {
-            $this->template = new $this->template();
-        }
+        $this->addAttribute('method', 'POST');
+        $this->addAttribute('action', '/');
+
+        $this->init();
 
         if (is_array($this->fields()) && !empty($this->fields())) {
             foreach ($this->fields() as $field) {
                 $this->add($field);
             }
         }
+    }
 
-        $this->appendClass($this->class);
-        $this->setId($this->id);
-        $this->setAction($this->action);
-        $this->setMethod($this->method);
+    public function init()
+    {
     }
 
     protected function renderElement()
@@ -101,26 +96,24 @@ class HomelyForm extends AbstractElement
 
     public function getAction()
     {
-        return $this->action;
+        return $this->attributes['method']?$this->attributes['method']:null;
     }
 
     public function setAction($action)
     {
-        $this->action = $action;
-        $this->toAddInElement['action'] = $this->action;
+        $this->attributes['action'] = $action;
 
         return $this;
     }
 
     public function getMethod()
     {
-        return $this->method;
+        return $this->attributes['method']?$this->attributes['method']:null;
     }
 
     public function setMethod($method)
     {
-        $this->method = $method;
-        $this->toAddInElement['method'] = $this->method;
+        $this->attributes['method'] = $method;
         return $this;
     }
 
@@ -135,7 +128,7 @@ class HomelyForm extends AbstractElement
 
         foreach ($_POST as $key => $value) {
             /** @var AbstractFormElement $element */
-            foreach ($this->elements as $element) {
+            foreach ($this->elements as &$element) {
                 if ($key == $element->getName()) {
                     $post[$key] = $value;
                     $element->setValue($value);
@@ -160,10 +153,14 @@ class HomelyForm extends AbstractElement
 
     public function isValid()
     {
+        $this->getPost();
+
         /** @var AbstractFormElement $field */
-        foreach ($this->fields() as $field) {
+        foreach ($this->elements as &$field) {
             $field->isValid();
         }
+
+        return $this;
     }
 
     public function getValues()

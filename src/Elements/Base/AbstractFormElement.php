@@ -77,7 +77,7 @@ abstract class AbstractFormElement extends AbstractElement
 
     public function getValue()
     {
-        return $this->attributes['placeHolder']?$this->attributes['placeHolder']:null;
+        return $this->attributes['value']?$this->attributes['value']:null;
     }
 
     public function setValue($value)
@@ -113,6 +113,8 @@ abstract class AbstractFormElement extends AbstractElement
 
     public function isValid()
     {
+        $this->errors = [];
+
         foreach ($this->validators as $validator => $options) {
             try {
                 Validator::buildRule($validator, $options['options'])->assert($this->getValue());
@@ -120,13 +122,15 @@ abstract class AbstractFormElement extends AbstractElement
                 $this->errors[$validator] = $options['message']?$options['message']:$e->getMessage();
             }
         }
+
+        return $this;
     }
 
     public function render()
     {
-        if ($this->template != null && $this->container == null) {
-            $type = strtolower(substr(get_called_class(), strrpos(get_called_class(), '\\') + 1));
+        $type = strtolower(substr(get_called_class(), strrpos(get_called_class(), '\\') + 1));
 
+        if ($this->template != null && $this->container == null) {
             if (isset($this->template->{$type . 'Container'})) {
                 $this->container = $this->template->{$type . 'Container'};
             } elseif (isset($this->template->{'basicContainerInput'})) {
@@ -142,9 +146,32 @@ abstract class AbstractFormElement extends AbstractElement
 
         $label = '';
         $element = '';
+        $errors = '';
 
         if ($this->label) {
             $label = $this->label->renderElement(). "\n";
+        }
+
+        if (sizeof($this->errors)) {
+            $errorClass = '';
+            $errorContainer = '<span {{errorClass}}>{{error}}</span>';
+
+            if (isset($this->template->{$type . 'ErrorClass'})) {
+                $errorClass = $this->template->{$type . 'ErrorClass'};
+            } elseif (isset($this->template->{'basicErrorClass'})) {
+                $errorClass = $this->template->{'basicErrorClass'};
+            }
+
+            if (isset($this->template->{$type . 'ErrorContainer'})) {
+                $errorContainer = $this->template->{$type . 'ErrorContainer'};
+            } elseif (isset($this->template->{'basicErrorContainer'})) {
+                $errorContainer = $this->template->{'basicErrorContainer'};
+            }
+
+            foreach ($this->errors as $error) {
+                $errorContainer = str_replace('{{errorClass}}', "class='{$errorClass}'", $errorContainer);
+                $errors .= str_replace('{{error}}', $error, $errorContainer);
+            }
         }
 
         $mainElement = $this->renderElement();
@@ -160,7 +187,7 @@ abstract class AbstractFormElement extends AbstractElement
             }
 
             if (strpos($container, '{{errors}}') !== false) {
-                $container = str_replace('{{errors}}', '', $container);
+                $container = str_replace('{{errors}}', $errors, $container);
             }
 
             return $container;
@@ -168,6 +195,7 @@ abstract class AbstractFormElement extends AbstractElement
 
         $element = $label;
         $element .= $mainElement;
+        $element .= $errors;
 
         return $element;
     }

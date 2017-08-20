@@ -7,8 +7,8 @@ class Button extends AbstractFormElement
 {
     public function __construct($title)
     {
-        $this->elementName = $title;
-        $this->name = $title;
+        parent::__construct($title);
+        $this->label = null;
     }
 
     protected $type = 'button';

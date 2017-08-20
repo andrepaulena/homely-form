@@ -141,16 +141,18 @@ abstract class AbstractElement
         $input = '';
 
         foreach ($this->attributes as $attr => $value) {
-            if ($attr == 'style' && !empty($value)) {
-                $valueStyle = [];
+            if ($attr == 'style') {
+                if (sizeof($value)) {
+                    $valueStyle = [];
 
-                foreach ($value as $style => &$valueStyle) {
-                    $valueStyle = $style.':'.$valueStyle;
+                    foreach ($value as $style => &$valueStyle) {
+                        $valueStyle = $style.':'.$valueStyle;
+                    }
+
+                    $valueStyle = implode(';', $value);
+
+                    $input .= "{$attr}='{$valueStyle}' ";
                 }
-
-                $valueStyle = implode(';', $value);
-
-                $input .= "{$attr}='{$valueStyle}' ";
             } else {
                 $value = trim($value);
 
