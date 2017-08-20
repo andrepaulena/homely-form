@@ -163,6 +163,22 @@ class HomelyForm extends AbstractElement
         return $this;
     }
 
+    public function getErrors()
+    {
+        $errors = [];
+
+        /** @var AbstractFormElement $field */
+        foreach ($this->elements as $field) {
+            $error = $field->getErrors();
+
+            if(sizeof($error)){
+                $errors[$field->getElementName()] = $error;
+            }
+        }
+
+        return $errors;
+    }
+
     public function getValues()
     {
         $values = [];

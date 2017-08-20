@@ -126,6 +126,10 @@ abstract class AbstractFormElement extends AbstractElement
         return $this;
     }
 
+    public function getErrors(){
+        return $this->errors;
+    }
+
     public function render()
     {
         $type = strtolower(substr(get_called_class(), strrpos(get_called_class(), '\\') + 1));
