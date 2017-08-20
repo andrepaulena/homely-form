@@ -11,25 +11,14 @@ class Button extends AbstractFormElement
         $this->label = null;
     }
 
-    protected $type = 'button';
-
-    protected $title = '';
-
     protected function renderElement()
     {
-        return "<button type='{$this->type}' {$this->concatAttributesToElement()}>{$this->title}</button>";
+        return "<button {$this->concatAttributesToElement()}>{$this->getName()}</button>";
     }
 
     public function setType($type)
     {
-        $this->type = $type;
-
-        return $this;
-    }
-
-    public function setTitle($title)
-    {
-        $this->title = $title;
+        $this->attributes['type'] = $type;
 
         return $this;
     }
