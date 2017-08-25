@@ -6,6 +6,11 @@ class BootstrapTemplate
     public $basicContainerInput = '<div class="form-group">{{label}}{{elementForm}}{{errors}}</div>';
     public $basicClassInput = 'form-control';
 
+    public $basicContainerErrorInput = '<div class="form-group has-error">{{label}}{{elementForm}}{{errors}}</div>';
+    public $basicClassErrorInput = 'form-control error';
+
+    public $textClassErrorInput = 'form-control error-text';
+
     public $basicErrorClass = 'error';
     public $basicErrorContainer = '<p>{{error}}</p>';
 

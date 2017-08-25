@@ -8,6 +8,8 @@ class HomelyForm extends AbstractElement
 {
     protected $elements = [];
 
+    protected $fromPost = [];
+    
     public function __construct()
     {
         $this->addAttribute('method', 'POST');
@@ -124,19 +126,19 @@ class HomelyForm extends AbstractElement
 
     public function getPost()
     {
-        $post = [];
-
-        foreach ($_POST as $key => $value) {
+        if (empty($this->fromPost)) {
             /** @var AbstractFormElement $element */
             foreach ($this->elements as &$element) {
-                if ($key == $element->getName()) {
-                    $post[$key] = $value;
-                    $element->setValue($value);
+                if (isset($_POST[$element->getName()])) {
+                    $element->setValueFromPost($_POST[$element->getName()]);
+                    $this->fromPost[$element->getName()] = $_POST[$element->getName()];
+                } elseif ($element->showValue()) {
+                    $this->fromPost[$element->getName()] = '';
                 }
             }
         }
 
-        return $post;
+        return $this->fromPost;
     }
 
     public function setValues($values)
@@ -155,12 +157,16 @@ class HomelyForm extends AbstractElement
     {
         $this->getPost();
 
+        $valid = true;
+
         /** @var AbstractFormElement $field */
         foreach ($this->elements as &$field) {
-            $field->isValid();
+            if (!$field->isValid() && $valid) {
+                $valid = false;
+            }
         }
 
-        return $this;
+        return $valid;
     }
 
     public function getErrors()
@@ -171,7 +177,7 @@ class HomelyForm extends AbstractElement
         foreach ($this->elements as $field) {
             $error = $field->getErrors();
 
-            if(sizeof($error)){
+            if (sizeof($error)) {
                 $errors[$field->getElementName()] = $error;
             }
         }
@@ -185,7 +191,9 @@ class HomelyForm extends AbstractElement
 
         /** @var AbstractFormElement $element */
         foreach ($this->elements as $element) {
-            $values[$element->getElementName()] = $element->getValue();
+            if ($element->showValue()) {
+                $values[$element->getElementName()] = $element->getValue();
+            }
         }
 
         return $values;

@@ -5,52 +5,55 @@ use HomelyForm\Elements\Base\AbstractFormElement;
 
 class CheckBox extends AbstractFormElement
 {
-    protected $options = [];
-
-    protected $multiple = false;
+    /** @var Hidden */
+    protected $unchecked;
 
     protected function renderElement()
     {
-        $multiple = $this->multiple?'multiple ':'';
-
-        $element =  '<select '.$multiple.$this->concatAttributesToElement().'>';
-
-        foreach ($this->options as $key => $value) {
-            $element .= "<option value='{$key}'>{$value}</option>";
+        if (!$this->unchecked) {
+            $this->setUncheckedValue(0);
         }
 
-        $element .= '</select>';
+        if (!$this->getValue()) {
+            $this->setValue(1);
+        }
+
+        if ($this->getValue() == $this->unchecked->getValue()) {
+            $this->setChecked(false);
+        }
+
+        $element = $this->unchecked->render();
+        $element .= '<input type="checkbox" '.$this->concatAttributesToElement().">";
 
         return $element;
     }
 
-    public function setOptions($options)
+    public function setChecked($change = true)
     {
-        if (is_array($options)) {
-            $this->options = $options;
+        $this->addAttribute('checked', $change);
+    }
+
+    public function setUncheckedValue($value)
+    {
+        $this->unchecked = new Hidden($this->getName());
+        $this->unchecked->setValue($value);
+
+        return $this;
+    }
+
+    public function setCheckedValue($value)
+    {
+        $this->setValue($value);
+
+        return $this;
+    }
+
+    public function setValueFromPost($value)
+    {
+        if (($this->getValue() === null && $value) || ($this->getValue() == $value)) {
+            $this->setChecked();
         }
 
         return $this;
-    }
-
-    public function addOption($key, $value)
-    {
-        $this->options[$key] = $value;
-
-        return $this;
-    }
-
-    public function removeOption($key)
-    {
-        if (isset($this->options[$key])) {
-            unset($this->options[$key]);
-        }
-
-        return $this;
-    }
-
-    public function setMultiple($multiple = true)
-    {
-        $this->multiple = $multiple;
     }
 }

@@ -5,52 +5,21 @@ use HomelyForm\Elements\Base\AbstractFormElement;
 
 class TextArea extends AbstractFormElement
 {
-    protected $options = [];
-
-    protected $multiple = false;
-
     protected function renderElement()
     {
-        $multiple = $this->multiple?'multiple ':'';
+        $value = $this->getValue();
+        $this->removeAttribute('value');
 
-        $element =  '<select '.$multiple.$this->concatAttributesToElement().'>';
-
-        foreach ($this->options as $key => $value) {
-            $element .= "<option value='{$key}'>{$value}</option>";
-        }
-
-        $element .= '</select>';
-
-        return $element;
+        return '<textarea '.$this->concatAttributesToElement().'>'.$value.'</textarea>';
     }
 
-    public function setOptions($options)
+    public function setRows($rows)
     {
-        if (is_array($options)) {
-            $this->options = $options;
-        }
-
-        return $this;
+        $this->addAttribute('rows', $rows);
     }
 
-    public function addOption($key, $value)
+    public function setCols($cols)
     {
-        $this->options[$key] = $value;
-
-        return $this;
-    }
-
-    public function removeOption($key)
-    {
-        if (isset($this->options[$key])) {
-            unset($this->options[$key]);
-        }
-
-        return $this;
-    }
-
-    public function setMultiple($multiple = true)
-    {
-        $this->multiple = $multiple;
+        $this->addAttribute('cols', $cols);
     }
 }

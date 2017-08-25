@@ -13,7 +13,12 @@ class Button extends AbstractFormElement
 
     protected function renderElement()
     {
-        return "<button {$this->concatAttributesToElement()}>{$this->getName()}</button>";
+        $name = $this->getName();
+
+        $this->removeAttribute('value');
+        $this->removeAttribute('name');
+
+        return "<button {$this->concatAttributesToElement()}>{$name}</button>";
     }
 
     public function setType($type)
@@ -21,5 +26,10 @@ class Button extends AbstractFormElement
         $this->attributes['type'] = $type;
 
         return $this;
+    }
+
+    public function showValue()
+    {
+        return false;
     }
 }

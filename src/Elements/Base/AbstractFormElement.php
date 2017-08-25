@@ -2,6 +2,8 @@
 namespace HomelyForm\Elements\Base;
 
 use HomelyForm\Elements\Label;
+use HomelyForm\Elements\Validators\ValidatorInterface;
+use HomelyForm\Exceptions\HomelyFormValidatorException;
 use Respect\Validation\Exceptions\ValidationException;
 use Respect\Validation\Validator;
 
@@ -17,6 +19,8 @@ abstract class AbstractFormElement extends AbstractElement
     }
 
     protected $label;
+
+    protected $respectValidators = [];
 
     protected $validators = [];
 
@@ -77,7 +81,7 @@ abstract class AbstractFormElement extends AbstractElement
 
     public function getValue()
     {
-        return $this->attributes['value']?$this->attributes['value']:null;
+        return isset($this->attributes['value'])&&$this->attributes['value']?$this->attributes['value']:'';
     }
 
     public function setValue($value)
@@ -85,6 +89,11 @@ abstract class AbstractFormElement extends AbstractElement
         $this->attributes['value'] = $value;
 
         return $this;
+    }
+
+    public function setValueFromPost($value)
+    {
+        return $this->setValue($value);
     }
 
     public function setRequired($required = true)
@@ -101,9 +110,9 @@ abstract class AbstractFormElement extends AbstractElement
         return $this;
     }
 
-    public function addValidator($validator, $options = [], $message = '')
+    public function addRespectValidator($validator, $options = [], $message = '')
     {
-        $this->validators[$validator] = [
+        $this->respectValidators[$validator] = [
             'options' => $options,
             'message' => $message
         ];
@@ -111,22 +120,53 @@ abstract class AbstractFormElement extends AbstractElement
         return $this;
     }
 
+    public function addCustomValidator(ValidatorInterface $validator)
+    {
+        $validatorName = $validator->getName()?$validator->getName():get_class($validator);
+
+        $this->validators[$validatorName] = $validator;
+    }
+
     public function isValid()
     {
         $this->errors = [];
 
-        foreach ($this->validators as $validator => $options) {
+        $valid = true;
+
+        foreach ($this->respectValidators as $validator => $options) {
             try {
                 Validator::buildRule($validator, $options['options'])->assert($this->getValue());
             } catch (ValidationException $e) {
                 $this->errors[$validator] = $options['message']?$options['message']:$e->getMessage();
+
+                $valid = false;
             }
         }
 
-        return $this;
+        /**
+         * @var string $validatorName
+         * @var ValidatorInterface $validator
+         */
+        foreach ($this->validators as $validatorName => $validator) {
+            try {
+                $validator->assert($this->getValue());
+            } catch (HomelyFormValidatorException $e) {
+                $this->errors[$validatorName] = $e->getMessage();
+
+                $valid = false;
+            }
+        }
+
+        return $valid;
     }
 
-    public function getErrors(){
+    public function showValue()
+    {
+        return true;
+    }
+
+    public function getErrors()
+    {
         return $this->errors;
     }
 
@@ -175,6 +215,18 @@ abstract class AbstractFormElement extends AbstractElement
             foreach ($this->errors as $error) {
                 $errorContainer = str_replace('{{errorClass}}', "class='{$errorClass}'", $errorContainer);
                 $errors .= str_replace('{{error}}', $error, $errorContainer);
+            }
+
+            if (isset($this->template->{$type . 'ErrorContainerInput'})) {
+                $this->container = $this->template->{$type . 'ErrorContainerInput'};
+            } elseif (isset($this->template->{'basicContainerErrorInput'})) {
+                $this->container = $this->template->{'basicContainerErrorInput'};
+            }
+
+            if (isset($this->template->{$type . 'ClassErrorInput'})) {
+                $this->setClass($this->template->{$type . 'ClassErrorInput'});
+            } elseif (isset($this->template->{'basicClassErrorInput'})) {
+                $this->setClass($this->template->{'basicClassErrorInput'});
             }
         }
 

@@ -16,7 +16,9 @@ class Select extends AbstractFormElement
         $element =  '<select '.$multiple.$this->concatAttributesToElement().'>';
 
         foreach ($this->options as $key => $value) {
-            $element .= "<option value='{$key}'>{$value}</option>";
+            $selected = $key == $this->getValue()?" selected":"";
+
+            $element .= "<option value='{$key}'".$selected.">{$value}</option>";
         }
 
         $element .= '</select>';

@@ -156,7 +156,7 @@ abstract class AbstractElement
             } else {
                 $value = trim($value);
 
-                if ($value) {
+                if ($value !== '') {
                     $input .= "{$attr}='{$value}' ";
                 }
             }
