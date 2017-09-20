@@ -125,6 +125,8 @@ abstract class AbstractFormElement extends AbstractElement
         $validatorName = $validator->getName()?$validator->getName():get_class($validator);
 
         $this->validators[$validatorName] = $validator;
+
+        return $this;
     }
 
     public function isValid()
