@@ -193,6 +193,14 @@ abstract class AbstractFormElement extends AbstractElement
         $errors = '';
 
         if ($this->label) {
+            if (isset($this->template->{'labelClass'})) {
+                $this->label->appendClass($this->template->{'labelClass'});
+            }
+
+            if (isset($this->template->{'labelContainer'})) {
+                $this->label->setContainer($this->template->{'labelContainer'});
+            }
+
             $label = $this->label->renderElement(). "\n";
         }
 
