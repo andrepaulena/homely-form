@@ -17,8 +17,10 @@ class HomelyForm extends AbstractElement
 
         $this->init();
 
-        if (is_array($this->fields()) && !empty($this->fields())) {
-            foreach ($this->fields() as $field) {
+        $fields = $this->fields();
+
+        if (is_array($fields) && !empty($fields)) {
+            foreach ($fields as $field) {
                 $this->add($field);
             }
         }
