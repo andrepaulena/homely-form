@@ -176,7 +176,7 @@ abstract class AbstractFormElement extends AbstractElement
     {
         $type = strtolower(substr(get_called_class(), strrpos(get_called_class(), '\\') + 1));
 
-        if ($this->template != null && $this->container == null) {
+        if ($this->enableTemplate && $this->template != null && $this->container == null) {
             if (isset($this->template->{$type . 'Container'})) {
                 $this->container = $this->template->{$type . 'Container'};
             } elseif (isset($this->template->{'basicContainerInput'})) {
@@ -194,7 +194,7 @@ abstract class AbstractFormElement extends AbstractElement
         $element = '';
         $errors = '';
 
-        if ($this->label) {
+        if ($this->enableTemplate && $this->label) {
             if (isset($this->template->{'labelClass'})) {
                 $this->label->appendClass($this->template->{'labelClass'});
             }
@@ -210,33 +210,36 @@ abstract class AbstractFormElement extends AbstractElement
             $errorClass = '';
             $errorContainer = '<span {{errorClass}}>{{error}}</span>';
 
-            if (isset($this->template->{$type . 'ErrorClass'})) {
-                $errorClass = $this->template->{$type . 'ErrorClass'};
-            } elseif (isset($this->template->{'basicErrorClass'})) {
-                $errorClass = $this->template->{'basicErrorClass'};
-            }
+            if($this->enableTemplate)
+            {
+                if (isset($this->template->{$type . 'ErrorClass'})) {
+                    $errorClass = $this->template->{$type . 'ErrorClass'};
+                } elseif (isset($this->template->{'basicErrorClass'})) {
+                    $errorClass = $this->template->{'basicErrorClass'};
+                }
 
-            if (isset($this->template->{$type . 'ErrorContainer'})) {
-                $errorContainer = $this->template->{$type . 'ErrorContainer'};
-            } elseif (isset($this->template->{'basicErrorContainer'})) {
-                $errorContainer = $this->template->{'basicErrorContainer'};
-            }
+                if (isset($this->template->{$type . 'ErrorContainer'})) {
+                    $errorContainer = $this->template->{$type . 'ErrorContainer'};
+                } elseif (isset($this->template->{'basicErrorContainer'})) {
+                    $errorContainer = $this->template->{'basicErrorContainer'};
+                }
 
-            foreach ($this->errors as $error) {
-                $errorContainer = str_replace('{{errorClass}}', "class='{$errorClass}'", $errorContainer);
-                $errors .= str_replace('{{error}}', $error, $errorContainer);
-            }
+                foreach ($this->errors as $error) {
+                    $errorContainer = str_replace('{{errorClass}}', "class='{$errorClass}'", $errorContainer);
+                    $errors .= str_replace('{{error}}', $error, $errorContainer);
+                }
 
-            if (isset($this->template->{$type . 'ErrorContainerInput'})) {
-                $this->container = $this->template->{$type . 'ErrorContainerInput'};
-            } elseif (isset($this->template->{'basicContainerErrorInput'})) {
-                $this->container = $this->template->{'basicContainerErrorInput'};
-            }
+                if (isset($this->template->{$type . 'ErrorContainerInput'})) {
+                    $this->container = $this->template->{$type . 'ErrorContainerInput'};
+                } elseif (isset($this->template->{'basicContainerErrorInput'})) {
+                    $this->container = $this->template->{'basicContainerErrorInput'};
+                }
 
-            if (isset($this->template->{$type . 'ClassErrorInput'})) {
-                $this->setClass($this->template->{$type . 'ClassErrorInput'});
-            } elseif (isset($this->template->{'basicClassErrorInput'})) {
-                $this->setClass($this->template->{'basicClassErrorInput'});
+                if (isset($this->template->{$type . 'ClassErrorInput'})) {
+                    $this->setClass($this->template->{$type . 'ClassErrorInput'});
+                } elseif (isset($this->template->{'basicClassErrorInput'})) {
+                    $this->setClass($this->template->{'basicClassErrorInput'});
+                }
             }
         }
 

@@ -15,6 +15,8 @@ abstract class AbstractElement
 
     protected $container;
 
+    protected $enableTemplate = true;
+
     abstract protected function renderElement();
 
     public function setTemplate($template)
@@ -129,6 +131,11 @@ abstract class AbstractElement
         }
 
         return $this;
+    }
+
+    public function enableTemplate($enableTemplate)
+    {
+        $this->enableTemplate = $enableTemplate;
     }
 
     public function __toString()
