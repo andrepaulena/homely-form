@@ -5,12 +5,12 @@ use HomelyForm\Elements\Base\AbstractElement;
 
 class Label extends AbstractElement
 {
-    public function __construct($name)
-    {
-        $this->name = $name;
-    }
+    protected $label;
 
-    protected $name;
+    public function __construct($label)
+    {
+        $this->label = $label;
+    }
 
     public function getFor()
     {
@@ -22,18 +22,18 @@ class Label extends AbstractElement
         $this->attributes['for'] = $for;
     }
 
-    public function getName()
+    public function getLabel()
     {
-        return $this->name;
+        return $this->label;
     }
 
-    public function setName($name)
+    public function setLabel($label)
     {
-        $this->name = $name;
+        $this->label = $label;
     }
 
-    protected function renderElement()
+    public function renderElement() : string
     {
-        return "<label ".$this->concatAttributesToElement().">{$this->name}</label>";
+        return "<label ".$this->concatAttributesToElement().">{$this->label}</label>";
     }
 }

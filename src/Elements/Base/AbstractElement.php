@@ -3,30 +3,16 @@ namespace HomelyForm\Elements\Base;
 
 abstract class AbstractElement
 {
-    protected $template;
-
     protected $elementName;
 
     protected $attributes = [
-        'id' => '',
         'class' => '',
-        'style' => []
+        'id' => ''
     ];
 
     protected $container;
 
-    protected $enableTemplate = true;
-
-    abstract protected function renderElement();
-
-    public function setTemplate($template)
-    {
-        if (!is_object($template)) {
-            $this->template = new $template();
-        } else {
-            $this->template = $template;
-        }
-    }
+    abstract public function renderElement() : string;
 
     public function getContainer()
     {
@@ -76,17 +62,10 @@ abstract class AbstractElement
 
     public function appendClass($class)
     {
+        $class = trim($class);
+
         if (strpos($this->attributes['class'], $class) === false) {
             $this->attributes['class'] .= " ".$class;
-        }
-
-        return $this;
-    }
-
-    public function prependClass($class)
-    {
-        if (strpos($this->attributes['class'], $class) === false) {
-            $this->attributes['class'] = $class." ".$this->attributes['class'];
         }
 
         return $this;
@@ -95,23 +74,7 @@ abstract class AbstractElement
     public function removeClass($class)
     {
         if (strpos($this->attributes['class'], $class) !== false) {
-            $this->attributes['class'] = str_replace($class, "", $this->attributes['class']);
-        }
-
-        return $this;
-    }
-
-    public function addStyle($attr, $value)
-    {
-        $this->attributes['style'][$attr] = $value;
-
-        return $this;
-    }
-
-    public function removeStyle($attr)
-    {
-        if (isset($this->attributes['style'][$attr])) {
-            unset($this->attributes['style'][$attr]);
+            $this->attributes['class'] = trim(str_replace($class, "", $this->attributes['class']));
         }
 
         return $this;
@@ -133,11 +96,6 @@ abstract class AbstractElement
         return $this;
     }
 
-    public function enableTemplate($enableTemplate)
-    {
-        $this->enableTemplate = $enableTemplate;
-    }
-
     public function __toString()
     {
         return $this->renderElement();
@@ -148,24 +106,10 @@ abstract class AbstractElement
         $input = '';
 
         foreach ($this->attributes as $attr => $value) {
-            if ($attr == 'style') {
-                if (sizeof($value)) {
-                    $valueStyle = [];
+            $value = trim($value);
 
-                    foreach ($value as $style => &$valueStyle) {
-                        $valueStyle = $style.':'.$valueStyle;
-                    }
-
-                    $valueStyle = implode(';', $value);
-
-                    $input .= "{$attr}='{$valueStyle}' ";
-                }
-            } else {
-                $value = trim($value);
-
-                if ($value !== '') {
-                    $input .= "{$attr}='{$value}' ";
-                }
+            if ($value) {
+                $input .= "{$attr}='{$value}' ";
             }
         }
 

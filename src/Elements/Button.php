@@ -1,35 +1,34 @@
 <?php
 namespace HomelyForm\Elements;
 
-use HomelyForm\Elements\Base\AbstractFormElement;
+use HomelyForm\Elements\Base\AbstractElement;
 
-class Button extends AbstractFormElement
+class Button extends AbstractElement
 {
-    public function __construct($title)
+    protected $name;
+
+    protected $container = '<div>{{element}}</div>';
+
+    public function __construct(string $name)
     {
-        parent::__construct($title);
-        $this->label = null;
+        $this->name = $name;
+        $this->elementName =  str_replace(' ', '-', mb_strtolower(trim($name)));
     }
 
-    protected function renderElement()
+    public function renderElement() : string
     {
-        $name = $this->getName();
-
-        $this->removeAttribute('value');
-        $this->removeAttribute('name');
-
-        return "<button {$this->concatAttributesToElement()}>{$name}</button>";
+        return "<button {$this->concatAttributesToElement()}>{$this->name}</button>";
     }
 
-    public function setType($type)
+    public function setType(string $type)
     {
         $this->attributes['type'] = $type;
 
         return $this;
     }
 
-    public function showValue()
+    public function setName(string $name)
     {
-        return false;
+        $this->name = $name;
     }
 }

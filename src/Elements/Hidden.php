@@ -5,13 +5,13 @@ use HomelyForm\Elements\Base\AbstractFormElement;
 
 class Hidden extends AbstractFormElement
 {
-    public function __construct($title)
+    public function __construct($name)
     {
-        parent::__construct($title);
+        parent::__construct($name);
         $this->label = null;
     }
 
-    protected function renderElement()
+    protected function renderFormElement() : string
     {
         return '<input type="hidden" '.$this->concatAttributesToElement().">";
     }

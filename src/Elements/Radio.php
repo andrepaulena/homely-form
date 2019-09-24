@@ -5,7 +5,7 @@ use HomelyForm\Elements\Base\AbstractFormElement;
 
 class Radio extends AbstractFormElement
 {
-    protected function renderElement()
+    protected function renderFormElement() : string
     {
         if (!$this->getValue()) {
             $this->setValue(1);

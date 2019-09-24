@@ -1,22 +1,28 @@
 <?php
 namespace HomelyForm\Templates;
 
-class BootstrapTemplate
+use HomelyForm\Elements\Text;
+
+class BootstrapTemplate implements TemplateInterface
 {
-    public $basicContainerInput = '<div class="form-group">{{label}}{{elementForm}}{{errors}}</div>';
-    public $basicClassInput = 'form-control';
+    public static function getElementContainer(string $elemClass): array
+    {
+        $elements = [
+            Text::class => [
+                'container' => '<div class="form-group">{{label}}{{elementForm}}{{errors}}</div>',
+                'inputClass' => 'text',
+                'errorContainer' => '<p class="text-error">{{error}}</p>'
+            ]
+        ];
 
-    public $basicContainerErrorInput = '<div class="form-group has-error">{{label}}{{elementForm}}{{errors}}</div>';
-    public $basicClassErrorInput = 'form-control error';
+        if (isset($elements[$elemClass])) {
+            return $elements[$elemClass];
+        }
 
-    public $textClassErrorInput = 'form-control error-text';
-
-    public $basicErrorClass = 'error';
-    public $basicErrorContainer = '<p>{{error}}</p>';
-
-    public $textContainer = '<div class="form-group">{{label}}{{elementForm}}{{errors}}</div>';
-    public $textClass = 'form-control text';
-
-    public $textErrorClass = 'error';
-    public $textErrorContainer = '<p {{errorClass}}>{{error}}</p>';
+        return [
+            'container' => '<div class="form-group">{{label}}{{elementForm}}{{errors}}</div>',
+            'inputClass' => 'form-control',
+            'errorContainer' => '<p class="error">{{error}}</p>'
+        ];
+    }
 }

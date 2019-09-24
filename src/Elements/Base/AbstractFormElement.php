@@ -2,29 +2,31 @@
 namespace HomelyForm\Elements\Base;
 
 use HomelyForm\Elements\Label;
-use HomelyForm\Elements\Validators\ValidatorInterface;
-use HomelyForm\Exceptions\HomelyFormValidatorException;
 use Respect\Validation\Exceptions\ValidationException;
 use Respect\Validation\Validator;
 
 abstract class AbstractFormElement extends AbstractElement
 {
-    public function __construct($title)
-    {
-        $this->label = new Label($title);
-        $this->label->setName(ucfirst(strtolower($title)));
+    protected $container = '<div>{{label}}{{elementForm}}{{errors}}</div>';
 
-        $this->elementName = $title;
-        $this->setName($title);
-    }
+    protected $errorContainer = '<span>{{error}}</span>';
 
+    /** @var Label */
     protected $label;
-
-    protected $respectValidators = [];
 
     protected $validators = [];
 
     protected $errors = [];
+
+    public function __construct($name, $attributes = [])
+    {
+        $this->label = new Label(ucfirst(strtolower($name)));
+
+        $this->elementName = $name;
+        $this->setName($name);
+
+        return $this;
+    }
 
     public function getName()
     {
@@ -34,13 +36,6 @@ abstract class AbstractFormElement extends AbstractElement
     public function setName($name)
     {
         $this->attributes['name'] = $name;
-
-        return $this;
-    }
-
-    public function setLabelName($name)
-    {
-        $this->label->setName($name);
 
         return $this;
     }
@@ -70,17 +65,19 @@ abstract class AbstractFormElement extends AbstractElement
         return $this->label;
     }
 
-    public function setLabel($label)
+    public function setLabel(Label $label)
     {
-        if ($label instanceof Label) {
-            $this->label = $label;
-        }
+        $this->label = $label;
 
         return $this;
     }
 
     public function getValue()
     {
+        if (empty($this->attributes['value']) && !empty($_POST[$this->getName()])) {
+            $this->setValue($_POST[$this->getName()]);
+        }
+
         return isset($this->attributes['value'])&&$this->attributes['value']?$this->attributes['value']:'';
     }
 
@@ -89,11 +86,6 @@ abstract class AbstractFormElement extends AbstractElement
         $this->attributes['value'] = $value;
 
         return $this;
-    }
-
-    public function setValueFromPost($value)
-    {
-        return $this->setValue($value);
     }
 
     public function setRequired($required = true)
@@ -110,21 +102,12 @@ abstract class AbstractFormElement extends AbstractElement
         return $this;
     }
 
-    public function addRespectValidator($validator, $options = [], $message = '')
+    public function addValidator(string $validator, $options = [], $message = '')
     {
-        $this->respectValidators[$validator] = [
+        $this->validators[$validator] = [
             'options' => $options,
             'message' => $message
         ];
-
-        return $this;
-    }
-
-    public function addCustomValidator(ValidatorInterface $validator)
-    {
-        $validatorName = $validator->getName()?$validator->getName():get_class($validator);
-
-        $this->validators[$validatorName] = $validator;
 
         return $this;
     }
@@ -135,7 +118,7 @@ abstract class AbstractFormElement extends AbstractElement
 
         $valid = true;
 
-        foreach ($this->respectValidators as $validator => $options) {
+        foreach ($this->validators as $validator => $options) {
             try {
                 Validator::buildRule($validator, $options['options'])->assert($this->getValue());
             } catch (ValidationException $e) {
@@ -145,26 +128,7 @@ abstract class AbstractFormElement extends AbstractElement
             }
         }
 
-        /**
-         * @var string $validatorName
-         * @var ValidatorInterface $validator
-         */
-        foreach ($this->validators as $validatorName => $validator) {
-            try {
-                $validator->assert($this->getValue());
-            } catch (HomelyFormValidatorException $e) {
-                $this->errors[$validatorName] = $e->getMessage();
-
-                $valid = false;
-            }
-        }
-
         return $valid;
-    }
-
-    public function showValue()
-    {
-        return true;
     }
 
     public function getErrors()
@@ -172,79 +136,16 @@ abstract class AbstractFormElement extends AbstractElement
         return $this->errors;
     }
 
-    public function render()
+    public function renderElement() : string
     {
-        $type = strtolower(substr(get_called_class(), strrpos(get_called_class(), '\\') + 1));
-
-        if ($this->enableTemplate && $this->template != null && $this->container == null) {
-            if (isset($this->template->{$type . 'Container'})) {
-                $this->container = $this->template->{$type . 'Container'};
-            } elseif (isset($this->template->{'basicContainerInput'})) {
-                $this->container = $this->template->{'basicContainerInput'};
-            }
-
-            if (isset($this->template->{$type . 'Class'})) {
-                $this->appendClass($this->template->{$type . 'Class'});
-            } elseif (isset($this->template->{'basicClassInput'})) {
-                $this->appendClass($this->template->{'basicClassInput'});
-            }
-        }
-
-        $label = '';
-        $element = '';
+        $container = $this->container;
+        $mainElement = $this->renderFormElement();
+        $label = $this->label->renderElement();
         $errors = '';
 
-        if ($this->enableTemplate && $this->label) {
-            if (isset($this->template->{'labelClass'})) {
-                $this->label->appendClass($this->template->{'labelClass'});
-            }
-
-            if (isset($this->template->{'labelContainer'})) {
-                $this->label->setContainer($this->template->{'labelContainer'});
-            }
-
-            $label = $this->label->renderElement(). "\n";
+        foreach ($this->errors as $error) {
+            $errors .= str_replace('{{error}}', $error, $this->errorContainer);
         }
-
-        if (sizeof($this->errors)) {
-            $errorClass = '';
-            $errorContainer = '<span {{errorClass}}>{{error}}</span>';
-
-            if($this->enableTemplate)
-            {
-                if (isset($this->template->{$type . 'ErrorClass'})) {
-                    $errorClass = $this->template->{$type . 'ErrorClass'};
-                } elseif (isset($this->template->{'basicErrorClass'})) {
-                    $errorClass = $this->template->{'basicErrorClass'};
-                }
-
-                if (isset($this->template->{$type . 'ErrorContainer'})) {
-                    $errorContainer = $this->template->{$type . 'ErrorContainer'};
-                } elseif (isset($this->template->{'basicErrorContainer'})) {
-                    $errorContainer = $this->template->{'basicErrorContainer'};
-                }
-
-                foreach ($this->errors as $error) {
-                    $errorContainer = str_replace('{{errorClass}}', "class='{$errorClass}'", $errorContainer);
-                    $errors .= str_replace('{{error}}', $error, $errorContainer);
-                }
-
-                if (isset($this->template->{$type . 'ErrorContainerInput'})) {
-                    $this->container = $this->template->{$type . 'ErrorContainerInput'};
-                } elseif (isset($this->template->{'basicContainerErrorInput'})) {
-                    $this->container = $this->template->{'basicContainerErrorInput'};
-                }
-
-                if (isset($this->template->{$type . 'ClassErrorInput'})) {
-                    $this->setClass($this->template->{$type . 'ClassErrorInput'});
-                } elseif (isset($this->template->{'basicClassErrorInput'})) {
-                    $this->setClass($this->template->{'basicClassErrorInput'});
-                }
-            }
-        }
-
-        $mainElement = $this->renderElement();
-        $container = $this->container;
 
         if ($this->container) {
             if (strpos($container, '{{label}}') !== false) {
@@ -269,8 +170,21 @@ abstract class AbstractFormElement extends AbstractElement
         return $element;
     }
 
-    public function __toString()
+    /**
+     * @return string
+     */
+    public function getErrorContainer(): string
     {
-        return $this->render();
+        return $this->errorContainer;
     }
+
+    /**
+     * @param string $errorContainer
+     */
+    public function setErrorContainer(string $errorContainer): void
+    {
+        $this->errorContainer = $errorContainer;
+    }
+
+    abstract protected function renderFormElement() : string;
 }

@@ -9,7 +9,7 @@ class Select extends AbstractFormElement
 
     protected $multiple = false;
 
-    protected function renderElement()
+    protected function renderFormElement() : string
     {
         $multiple = $this->multiple?'multiple ':'';
 

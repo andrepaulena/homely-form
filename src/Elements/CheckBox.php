@@ -8,7 +8,7 @@ class CheckBox extends AbstractFormElement
     /** @var Hidden */
     protected $unchecked;
 
-    protected function renderElement()
+    protected function renderFormElement() : string
     {
         if (!$this->unchecked) {
             $this->setUncheckedValue(0);
@@ -22,7 +22,7 @@ class CheckBox extends AbstractFormElement
             $this->setChecked(false);
         }
 
-        $element = $this->unchecked->render();
+        $element = $this->unchecked->renderElement();
         $element .= '<input type="checkbox" '.$this->concatAttributesToElement().">";
 
         return $element;

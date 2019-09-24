@@ -5,7 +5,7 @@ use HomelyForm\Elements\Base\AbstractFormElement;
 
 class File extends AbstractFormElement
 {
-    protected function renderElement()
+    protected function renderFormElement() : string
     {
         return '<input type="file" '.$this->concatAttributesToElement().">";
     }

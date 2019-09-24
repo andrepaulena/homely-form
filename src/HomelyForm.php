@@ -3,20 +3,27 @@ namespace HomelyForm;
 
 use HomelyForm\Elements\Base\AbstractElement;
 use HomelyForm\Elements\Base\AbstractFormElement;
+use HomelyForm\Exceptions\HomelyFormException;
+use HomelyForm\Templates\TemplateInterface;
 
-class HomelyForm extends AbstractElement
+abstract class HomelyForm extends AbstractElement
 {
+    protected $attributes = [
+        'method' => 'POST',
+        'action' => '/'
+    ];
+
     protected $elements = [];
 
-    protected $fromPost = [];
-    
+    protected $values = [];
+
+    /** @var TemplateInterface */
+    protected $template;
+
+    abstract public function fields() : array;
+
     public function __construct()
     {
-        $this->addAttribute('method', 'POST');
-        $this->addAttribute('action', '/');
-
-        $this->init();
-
         $fields = $this->fields();
 
         if (is_array($fields) && !empty($fields)) {
@@ -26,17 +33,13 @@ class HomelyForm extends AbstractElement
         }
     }
 
-    public function init()
-    {
-    }
-
-    protected function renderElement()
+    public function renderElement() : string
     {
         $form = "<form ".$this->concatAttributesToElement().">\n";
 
         /** @var AbstractFormElement $element */
         foreach ($this->elements as $element) {
-            $form .= $element->render()."\n";
+            $form .= $element->renderElement()."\n";
         }
 
         $form .= "</form>";
@@ -44,48 +47,28 @@ class HomelyForm extends AbstractElement
         return $form;
     }
 
-    public function add(AbstractFormElement $element)
+    public function add(AbstractElement $element)
     {
-        $this->elements[$element->getElementName()] = $element;
+        if ($element instanceof AbstractFormElement && $this->template) {
+            $container = $this->template::getElementContainer(get_class($element));
 
-        if ($element->getContainer() == null && $this->template != null) {
-            $element->setTemplate($this->template);
+            $element->setContainer($container['container']);
+            $element->appendClass($container['inputClass']);
+            $element->setErrorContainer($container['errorContainer']);
         }
+
+        $this->elements[$element->getElementName()] = $element;
 
         return $this;
     }
 
-    public function getElementById($id)
-    {
-        /** @var AbstractFormElement $element */
-        foreach ($this->elements as $element) {
-            if ($element->getId() == $id) {
-                return $element;
-            }
-        }
-
-        return null;
-    }
-
-    public function getElementByName($name)
-    {
-        /** @var AbstractFormElement $element */
-        foreach ($this->elements as $element) {
-            if ($element->getName() == $name) {
-                return $element;
-            }
-        }
-
-        return null;
-    }
-
-    public function getElement($name)
+    public function getElement(string $name) : AbstractFormElement
     {
         if (isset($this->elements[$name])) {
             return $this->elements[$name];
         }
 
-        return null;
+        throw new HomelyFormException('Element [' . $name . '] not found');
     }
 
     public function removeElement($name)
@@ -95,55 +78,34 @@ class HomelyForm extends AbstractElement
             return true;
         }
 
-        return false;
+        throw new HomelyFormException('Element [' . $name . '] not found');
+        ;
     }
 
-    public function getAction()
+    public function getAction() : string
     {
-        return $this->attributes['method']?$this->attributes['method']:null;
+        return $this->attributes['action'];
     }
 
-    public function setAction($action)
+    public function setAction(string $action)
     {
         $this->attributes['action'] = $action;
 
         return $this;
     }
 
-    public function getMethod()
+    public function getMethod() : string
     {
         return $this->attributes['method']?$this->attributes['method']:null;
     }
 
-    public function setMethod($method)
+    public function setMethod(string $method)
     {
         $this->attributes['method'] = $method;
         return $this;
     }
 
-    public function fields()
-    {
-        return [];
-    }
-
-    public function getPost()
-    {
-        if (empty($this->fromPost)) {
-            /** @var AbstractFormElement $element */
-            foreach ($this->elements as &$element) {
-                if (isset($_POST[$element->getName()])) {
-                    $element->setValueFromPost($_POST[$element->getName()]);
-                    $this->fromPost[$element->getName()] = $_POST[$element->getName()];
-                } elseif ($element->showValue()) {
-                    $this->fromPost[$element->getName()] = '';
-                }
-            }
-        }
-
-        return $this->fromPost;
-    }
-
-    public function setValues($values)
+    public function setValues($values = [])
     {
         foreach ($values as $key => $value) {
             /** @var AbstractFormElement $element */
@@ -157,13 +119,13 @@ class HomelyForm extends AbstractElement
 
     public function isValid()
     {
-        $this->getPost();
+        $this->getValues();
 
         $valid = true;
 
         /** @var AbstractFormElement $field */
         foreach ($this->elements as &$field) {
-            if (!$field->isValid() && $valid) {
+            if ($field instanceof AbstractFormElement && !$field->isValid() && $valid) {
                 $valid = false;
             }
         }
@@ -177,10 +139,12 @@ class HomelyForm extends AbstractElement
 
         /** @var AbstractFormElement $field */
         foreach ($this->elements as $field) {
-            $error = $field->getErrors();
+            if ($field instanceof AbstractFormElement) {
+                $error = $field->getErrors();
 
-            if (sizeof($error)) {
-                $errors[$field->getElementName()] = $error;
+                if (sizeof($error)) {
+                    $errors[$field->getElementName()] = $error;
+                }
             }
         }
 
@@ -189,15 +153,17 @@ class HomelyForm extends AbstractElement
 
     public function getValues()
     {
-        $values = [];
+        if (!empty($this->values)) {
+            return $this->values;
+        }
 
         /** @var AbstractFormElement $element */
         foreach ($this->elements as $element) {
-            if ($element->showValue()) {
-                $values[$element->getElementName()] = $element->getValue();
+            if ($element instanceof AbstractFormElement) {
+                $this->values[$element->getElementName()] = $element->getValue();
             }
         }
 
-        return $values;
+        return $this->values;
     }
 }

@@ -5,7 +5,7 @@ use HomelyForm\Elements\Base\AbstractFormElement;
 
 class TextArea extends AbstractFormElement
 {
-    protected function renderElement()
+    protected function renderFormElement() : string
     {
         $value = $this->getValue();
         $this->removeAttribute('value');
